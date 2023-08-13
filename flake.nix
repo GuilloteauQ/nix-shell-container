@@ -2,53 +2,53 @@
   description = "A very basic flake";
 
   inputs = {
+    # This one is overridable
     nixpkgs.url = "github:nixos/nixpkgs/23.05";
+    # This one, probably not
+    nixpkgs_stable.url = "github:nixos/nixpkgs/23.05";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, nixpkgs_stable }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
-      myShell = { buildInputs ? [], shellHook ? ""}:
-      let
-        gotainer = self.outputs.packages.${system}.gotainer;
-        underlyingShell = pkgs.mkShell {
-          buildInputs = buildInputs ++ [ pkgs.bashInteractive  ];
-          inherit shellHook;
-        };
-      in
-        pkgs.mkShell {
-          buildInputs = [ gotainer ];
-          shellHook = ''
-          ${gotainer}/bin/gotainer run  ${underlyingShell} ${pkgs.bashInteractive}
-          exit
-          '';
-        }
-     ;
-      in
-    {
+      pkgs_stable = import nixpkgs_stable { inherit system; };
+    in {
+      lib = {
+        mkShell = { containerize ? false, buildInputs ? [ ] }@shellInputs:
+          let
+            gotainer = self.outputs.packages.${system}.gotainer;
+            underlyingShell = pkgs.mkShell ({
+              buildInputs = buildInputs ++ [ pkgs.bashInteractive ];
+            } // shellInputs);
+          in if containerize then
+            pkgs.mkShell {
+              buildInputs = [ gotainer ];
+              shellHook = ''
+                ${gotainer}/bin/gotainer run ${underlyingShell} ${pkgs.bashInteractive}
+                exit
+              '';
+            }
+          else
+            underlyingShell;
+      };
 
       packages.${system} = {
-        hello = myShell {
-          buildInputs = [
-            pkgs.snakemake
-          ];
+        hello = self.lib.mkShell {
+          buildInputs = [ pkgs.snakemake pkgs.python3 pkgs.lua ];
+          containerize = true;
         };
-        gotainer = pkgs.buildGoModule {
-            name = "gotainer";
-            version = "0.0";
-            src = ./gotainer;
-            vendorSha256 = null;
-       };
+        gotainer = pkgs_stable.buildGoModule {
+          name = "gotainer";
+          version = "0.0";
+          src = ./gotainer;
+          vendorSha256 = null;
+        };
       };
 
       devShells.${system} = {
         default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            # 
-            bashInteractive
-            go
-          ];
+          buildInputs = with pkgs; [ bashInteractive go ];
           shellHook = ''
             echo ${pkgs.bashInteractive}
           '';

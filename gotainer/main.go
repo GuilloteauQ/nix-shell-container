@@ -26,7 +26,7 @@ func main() {
 }
 
 func run() string {
-	fmt.Printf("Running %v \n", os.Args[2:])
+	// fmt.Printf("Running %v \n", os.Args[2:])
     tmp_dir, err := ioutil.TempDir("/tmp", "nix-container")
     if err != nil {
         log.Fatal(err)
@@ -133,6 +133,13 @@ func setup_nix_env(env_filename string) {
             splitted := strings.Split(s, "=")
             var_name := splitted[0]
             var_value := strings.Join(splitted[1:], "=")
+            var_length := len(var_value)
+            if var_length > 2 && var_value[0] == '"' && var_value[var_length-1] == '"' {
+                var_value = var_value[1:(var_length-2)]
+            }
+            if var_name == "HOME" {
+                var_value = "/root"
+            }
             must(syscall.Setenv(var_name, var_value))
         } else {
             skip = skip - 1
@@ -142,9 +149,9 @@ func setup_nix_env(env_filename string) {
 }
 
 func cleanup(tmp_dir string) {
-    fmt.Printf(" [*] Starting the cleanup\n")
+    // fmt.Printf(" [*] Starting the cleanup\n")
     container_root_path := filepath.Join(tmp_dir, "nixos_root_empty")
-    fmt.Printf(" [*] Rm /\n")
+    // fmt.Printf(" [*] Rm /\n")
     must(os.RemoveAll(container_root_path))
     // must(os.Remove(filepath.Join(tmp_dir, "nix_deps")))
     must(os.RemoveAll(tmp_dir))
@@ -164,7 +171,7 @@ func save_nix_deps(shell string, filename string) {
 }
 
 func child() {
-	fmt.Printf("Running %v as %d \n", os.Args[2:], os.Getpid())
+	//fmt.Printf("Running %v as %d \n", os.Args[2:], os.Getpid())
     tmp_dir := os.Args[2]
 
 	cg()
@@ -194,12 +201,13 @@ func child() {
 
     set_env(nix_deps_file, container_root_path)
 
+
 	must(syscall.Sethostname([]byte("nix-shell-container")))
-	fmt.Printf(" [*] Set container hostname\n")
+	// fmt.Printf(" [*] Set container hostname\n")
 	must(syscall.Chroot(container_root_path))
-	fmt.Printf(" [*] Perform chroot\n")
+	// fmt.Printf(" [*] Perform chroot\n")
 	must(os.Chdir("/root"))
-	fmt.Printf(" [*] Change dir\n")
+	// fmt.Printf(" [*] Change dir\n")
 
 	// must(syscall.Mount("/proc", "/proc", "proc", 0, ""))
 
