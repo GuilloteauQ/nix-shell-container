@@ -17,8 +17,7 @@ import (
 func main() {
 	switch os.Args[1] {
 	case "run":
-		run()
-        cleanup()
+        cleanup(run())
 	case "child":
 		child()
 	default:
@@ -26,10 +25,18 @@ func main() {
 	}
 }
 
-func run() {
+func run() string {
 	fmt.Printf("Running %v \n", os.Args[2:])
+    tmp_dir, err := ioutil.TempDir("/tmp", "nix-container")
+    if err != nil {
+        log.Fatal(err)
+    }
 
-	cmd := exec.Command("/proc/self/exe", append([]string{"child"}, os.Args[2:]...)...)
+    command := fmt.Sprintf("child %s %s", tmp_dir, strings.Join(os.Args[2:], " "))
+
+	// cmd := exec.Command("/proc/self/exe", append([]string{"child"}, append(tmp_dir, os.Args[2:]...)...)...)
+    cmds := strings.Split(command, " ")
+	cmd := exec.Command("/proc/self/exe", cmds...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -39,6 +46,8 @@ func run() {
 	}
 
 	must(cmd.Run())
+
+    return tmp_dir
 }
 
 func add_path_to_env(nix_store_path string, container_root_path string) {
@@ -132,16 +141,14 @@ func setup_nix_env(env_filename string) {
     f.Close()
 }
 
-func cleanup() {
-    ici, err := os.Getwd()
-    if err != nil {
-        fmt.Printf("ERROR: %v\n", err)
-    }
+func cleanup(tmp_dir string) {
     fmt.Printf(" [*] Starting the cleanup\n")
-    container_root_path := filepath.Join(ici, "nixos_root_empty")
+    container_root_path := filepath.Join(tmp_dir, "nixos_root_empty")
     fmt.Printf(" [*] Rm /\n")
     must(os.RemoveAll(container_root_path))
-    must(os.Remove(filepath.Join(ici, "nix_deps")))
+    // must(os.Remove(filepath.Join(tmp_dir, "nix_deps")))
+    must(os.RemoveAll(tmp_dir))
+
 }
 
 func save_nix_deps(shell string, filename string) {
@@ -158,6 +165,7 @@ func save_nix_deps(shell string, filename string) {
 
 func child() {
 	fmt.Printf("Running %v as %d \n", os.Args[2:], os.Getpid())
+    tmp_dir := os.Args[2]
 
 	cg()
 
@@ -166,22 +174,22 @@ func child() {
     if err != nil {
         fmt.Printf("ERROR: %v\n", err)
     }
-    container_root_path := filepath.Join(ici, "nixos_root_empty")
+    container_root_path := filepath.Join(tmp_dir, "nixos_root_empty")
     must(syscall.Mkdir(container_root_path, 700))
     must(syscall.Mkdir(filepath.Join(container_root_path, "etc/"), 700))
     must(syscall.Mkdir(filepath.Join(container_root_path, "nix/"), 700))
     must(syscall.Mkdir(filepath.Join(container_root_path, "nix/store"), 700))
     must(syscall.Mkdir(filepath.Join(container_root_path, "root"), 700))
 
-    passwd_content := fmt.Sprintf("root:x:0:0:sysadmin:/root:%s/bin/bash", os.Args[3])
+    passwd_content := fmt.Sprintf("root:x:0:0:sysadmin:/root:%s/bin/bash", os.Args[4])
      if err := os.WriteFile(filepath.Join(container_root_path, "etc/passwd"), []byte(passwd_content), 0644); err != nil {
         log.Fatal(err)
     }
 
 	must(syscall.Mount(ici, filepath.Join(container_root_path, "root"), "", syscall.MS_BIND, ""))
 
-    nix_deps_file := filepath.Join(ici, "nix_deps")
-    save_nix_deps(os.Args[2], nix_deps_file)
+    nix_deps_file := filepath.Join(tmp_dir, "nix_deps")
+    save_nix_deps(os.Args[3], nix_deps_file)
 
 
     set_env(nix_deps_file, container_root_path)
@@ -197,10 +205,10 @@ func child() {
 
     // gotainer run nix-shell bash 
 
-    setup_nix_env(os.Args[2])
+    setup_nix_env(os.Args[3])
 
-    if len(os.Args) > 4 {
-        cmd3 := exec.Command("bash", "-c", os.Args[4])
+    if len(os.Args) > 5 {
+        cmd3 := exec.Command("bash", "-c", os.Args[5])
         cmd3.Stdin = os.Stdin
         cmd3.Stdout = os.Stdout
         cmd3.Stderr = os.Stderr
