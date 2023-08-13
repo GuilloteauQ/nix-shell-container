@@ -141,6 +141,19 @@ func cleanup() {
     container_root_path := filepath.Join(ici, "nixos_root_empty")
     fmt.Printf(" [*] Rm /\n")
     must(os.RemoveAll(container_root_path))
+    must(os.Remove(filepath.Join(ici, "nix_deps")))
+}
+
+func save_nix_deps(shell string, filename string) {
+    cmd := exec.Command("nix-store", "-qR", shell)//, os.Args[2:]...)
+    outfile, err := os.Create(filename)
+    if err != nil {
+        panic(err)
+    }
+    cmd.Stdout = outfile
+
+    cmd.Run()
+    outfile.Close()
 }
 
 func child() {
@@ -167,7 +180,11 @@ func child() {
 
 	must(syscall.Mount(ici, filepath.Join(container_root_path, "root"), "", syscall.MS_BIND, ""))
 
-    set_env(os.Args[2], container_root_path)
+    nix_deps_file := filepath.Join(ici, "nix_deps")
+    save_nix_deps(os.Args[2], nix_deps_file)
+
+
+    set_env(nix_deps_file, container_root_path)
 
 	must(syscall.Sethostname([]byte("nix-shell-container")))
 	fmt.Printf(" [*] Set container hostname\n")
@@ -178,10 +195,12 @@ func child() {
 
 	// must(syscall.Mount("/proc", "/proc", "proc", 0, ""))
 
-    setup_nix_env(os.Args[4])
+    // gotainer run nix-shell bash 
 
-    if len(os.Args) > 5 {
-        cmd3 := exec.Command("bash", "-c", os.Args[5])
+    setup_nix_env(os.Args[2])
+
+    if len(os.Args) > 4 {
+        cmd3 := exec.Command("bash", "-c", os.Args[4])
         cmd3.Stdin = os.Stdin
         cmd3.Stdout = os.Stdout
         cmd3.Stderr = os.Stderr
@@ -198,7 +217,7 @@ func child() {
 	// fmt.Printf(" [*] Unmount /proc\n")
 
 
-    clean_env(os.Args[2])
+    // clean_env(nix_deps_file)
 }
 
 func cg() {
