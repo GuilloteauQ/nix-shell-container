@@ -173,7 +173,7 @@ func save_nix_deps(shell string, filename string) {
 }
 
 func child() {
-	//fmt.Printf("Running %v as %d \n", os.Args[2:], os.Getpid())
+	// fmt.Printf("Running %v as %d \n", os.Args[2:], os.Getpid())
 	tmp_dir := os.Args[2]
 
 	cg()
@@ -221,7 +221,7 @@ func child() {
 
 	setup_nix_env(os.Args[3], tmp_dir)
     bash := fmt.Sprintf("%s/bin/bash", os.Args[4])
-    fmt.Printf("BASH: %s\n", bash)
+    // fmt.Printf("BASH: %s\n", bash)
 
 	if len(os.Args) > 5 {
 		cmd3 := exec.Command(bash, "-c", os.Args[5])
