@@ -137,7 +137,7 @@ func setup_nix_env(env_filename string, tmp_dir string) {
 			var_value := strings.Join(splitted[1:], "=")
 			var_length := len(var_value)
 			if var_length > 2 && var_value[0] == '"' && var_value[var_length-1] == '"' {
-				var_value = var_value[1:(var_length - 2)]
+				var_value = var_value[1:(var_length - 1)]
 			}
 			if var_name == "HOME" {
 				var_value = "/root"
