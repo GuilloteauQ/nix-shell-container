@@ -126,8 +126,8 @@ func setup_nix_env(env_filename string, tmp_dir string) (shell_hook string) {
 	}
 	scanner := bufio.NewScanner(f)
 	skip := 5
-    // will be overwritten below if needed
-    must(syscall.Setenv("PS1", fmt.Sprintf("\\e[40;1;32m[\\u@\\h(%s):\\w$]$\\e[40;0;37m ", tmp_dir)))
+	// will be overwritten below if needed
+	must(syscall.Setenv("PS1", fmt.Sprintf("\\e[40;1;32m[\\u@\\h(%s):\\w$]$\\e[40;0;37m ", tmp_dir)))
 	for scanner.Scan() {
 		command := scanner.Text()
 		if skip == 0 {
@@ -142,16 +142,16 @@ func setup_nix_env(env_filename string, tmp_dir string) (shell_hook string) {
 			if var_name == "HOME" {
 				var_value = "/root"
 			}
-            if var_name == "shellHook" {
-                shell_hook = var_value
-            }
+			if var_name == "shellHook" {
+				shell_hook = var_value
+			}
 			must(syscall.Setenv(var_name, var_value))
 		} else {
 			skip = skip - 1
 		}
 	}
 	f.Close()
-    return
+	return
 }
 
 func cleanup(tmp_dir string) {
@@ -221,18 +221,18 @@ func child() {
 
 	// gotainer run nix-shell bash
 
-    bash := fmt.Sprintf("%s/bin/bash", os.Args[4])
+	bash := fmt.Sprintf("%s/bin/bash", os.Args[4])
 
-    shell_hook_cmd := setup_nix_env(os.Args[3], tmp_dir)
-    shell_hook_cmd = shell_hook_cmd[2:(len(shell_hook_cmd)-3)]
-    hooks := strings.Split(shell_hook_cmd, `\n`) 
-    for _, cmd_hook := range hooks {
-        cmdShellHook := exec.Command(bash, "-c", cmd_hook)
-        cmdShellHook.Stdin = os.Stdin
-        cmdShellHook.Stdout = os.Stdout
-        cmdShellHook.Stderr = os.Stderr
-        cmdShellHook.Run()
-    } 
+	shell_hook_cmd := setup_nix_env(os.Args[3], tmp_dir)
+	shell_hook_cmd = shell_hook_cmd[2:(len(shell_hook_cmd) - 3)]
+	hooks := strings.Split(shell_hook_cmd, `\n`)
+	for _, cmd_hook := range hooks {
+		cmdShellHook := exec.Command(bash, "-c", cmd_hook)
+		cmdShellHook.Stdin = os.Stdin
+		cmdShellHook.Stdout = os.Stdout
+		cmdShellHook.Stderr = os.Stderr
+		cmdShellHook.Run()
+	}
 
 	if len(os.Args) > 5 {
 		cmd3 := exec.Command(bash, "-c", os.Args[5])
