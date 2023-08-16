@@ -119,13 +119,15 @@ func clean_env(deps_filename string) {
 	f.Close()
 }
 
-func setup_nix_env(env_filename string) {
+func setup_nix_env(env_filename string, tmp_dir string) {
 	f, err := os.Open(env_filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 	scanner := bufio.NewScanner(f)
 	skip := 5
+    // will be overwritten below if needed
+    must(syscall.Setenv("PS1", fmt.Sprintf("\\e[40;1;32m[\\u@\\h(%s):\\w$]$\\e[40;0;37m", tmp_dir)))
 	for scanner.Scan() {
 		command := scanner.Text()
 		if skip == 0 {
@@ -210,7 +212,9 @@ func child() {
 
 	// gotainer run nix-shell bash
 
-	setup_nix_env(os.Args[3])
+    // TODO shellhook
+
+	setup_nix_env(os.Args[3], tmp_dir)
 
 	if len(os.Args) > 5 {
 		cmd3 := exec.Command("bash", "-c", os.Args[5])
