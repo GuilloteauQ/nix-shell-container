@@ -127,7 +127,7 @@ func setup_nix_env(env_filename string, tmp_dir string) {
 	scanner := bufio.NewScanner(f)
 	skip := 5
     // will be overwritten below if needed
-    must(syscall.Setenv("PS1", fmt.Sprintf("\\e[40;1;32m[\\u@\\h(%s):\\w$]$\\e[40;0;37m", tmp_dir)))
+    must(syscall.Setenv("PS1", fmt.Sprintf("\\e[40;1;32m[\\u@\\h(%s):\\w$]$\\e[40;0;37m ", tmp_dir)))
 	for scanner.Scan() {
 		command := scanner.Text()
 		if skip == 0 {
