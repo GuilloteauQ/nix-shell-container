@@ -35,6 +35,10 @@
         hello = self.lib.mkShell {
           buildInputs = [ pkgs.snakemake pkgs.python3 pkgs.lua ];
           containerize = true;
+          shellHook = ''
+            lua -v
+            python3 --version
+          '';
         };
         gotainer = pkgs_stable.buildGoModule {
           name = "gotainer";

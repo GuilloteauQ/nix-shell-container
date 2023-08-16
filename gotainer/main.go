@@ -119,7 +119,7 @@ func clean_env(deps_filename string) {
 	f.Close()
 }
 
-func setup_nix_env(env_filename string, tmp_dir string) {
+func setup_nix_env(env_filename string, tmp_dir string) (shell_hook string) {
 	f, err := os.Open(env_filename)
 	if err != nil {
 		log.Fatal(err)
@@ -142,12 +142,16 @@ func setup_nix_env(env_filename string, tmp_dir string) {
 			if var_name == "HOME" {
 				var_value = "/root"
 			}
+            if var_name == "shellHook" {
+                shell_hook = var_value
+            }
 			must(syscall.Setenv(var_name, var_value))
 		} else {
 			skip = skip - 1
 		}
 	}
 	f.Close()
+    return
 }
 
 func cleanup(tmp_dir string) {
@@ -217,11 +221,18 @@ func child() {
 
 	// gotainer run nix-shell bash
 
-    // TODO shellhook
-
-	setup_nix_env(os.Args[3], tmp_dir)
     bash := fmt.Sprintf("%s/bin/bash", os.Args[4])
-    // fmt.Printf("BASH: %s\n", bash)
+
+    shell_hook_cmd := setup_nix_env(os.Args[3], tmp_dir)
+    shell_hook_cmd = shell_hook_cmd[2:(len(shell_hook_cmd)-3)]
+    hooks := strings.Split(shell_hook_cmd, `\n`) 
+    for _, cmd_hook := range hooks {
+        cmdShellHook := exec.Command(bash, "-c", cmd_hook)
+        cmdShellHook.Stdin = os.Stdin
+        cmdShellHook.Stdout = os.Stdout
+        cmdShellHook.Stderr = os.Stderr
+        cmdShellHook.Run()
+    } 
 
 	if len(os.Args) > 5 {
 		cmd3 := exec.Command(bash, "-c", os.Args[5])
