@@ -15,12 +15,10 @@
       pkgs_stable = import nixpkgs_stable { inherit system; };
     in {
       lib = {
-        mkShell = { containerize ? false, buildInputs ? [ ] }@shellInputs:
+        mkShell = { containerize ? false, ... }@shellInputs:
           let
             gotainer = self.outputs.packages.${system}.gotainer;
-            underlyingShell = pkgs.mkShell ({
-              buildInputs = buildInputs ++ [ pkgs.bashInteractive ];
-            } // shellInputs);
+            underlyingShell = pkgs.mkShell shellInputs;
           in if containerize then
             pkgs.mkShell {
               buildInputs = [ gotainer ];

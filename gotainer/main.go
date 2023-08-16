@@ -201,6 +201,11 @@ func child() {
 
 	set_env(nix_deps_file, container_root_path)
 
+	nix_deps_file_bash := filepath.Join(tmp_dir, "nix_deps_bash")
+	save_nix_deps(os.Args[4], nix_deps_file_bash)
+
+	set_env(nix_deps_file_bash, container_root_path)
+
 	must(syscall.Sethostname([]byte("nix-shell-container")))
 	// fmt.Printf(" [*] Set container hostname\n")
 	must(syscall.Chroot(container_root_path))
@@ -215,15 +220,17 @@ func child() {
     // TODO shellhook
 
 	setup_nix_env(os.Args[3], tmp_dir)
+    bash := fmt.Sprintf("%s/bin/bash", os.Args[4])
+    fmt.Printf("BASH: %s\n", bash)
 
 	if len(os.Args) > 5 {
-		cmd3 := exec.Command("bash", "-c", os.Args[5])
+		cmd3 := exec.Command(bash, "-c", os.Args[5])
 		cmd3.Stdin = os.Stdin
 		cmd3.Stdout = os.Stdout
 		cmd3.Stderr = os.Stderr
 		cmd3.Run()
 	} else {
-		cmd3 := exec.Command("bash") //, os.Args[2:]...)
+		cmd3 := exec.Command(bash) //, os.Args[2:]...)
 		cmd3.Stdin = os.Stdin
 		cmd3.Stdout = os.Stdout
 		cmd3.Stderr = os.Stderr
