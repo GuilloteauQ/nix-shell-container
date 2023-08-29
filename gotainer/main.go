@@ -41,8 +41,11 @@ func run() string {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags:   syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
+		Cloneflags:   syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER,
 		Unshareflags: syscall.CLONE_NEWNS,
+        Credential: &syscall.Credential{Uid:0 , Gid: 0},
+        UidMappings: []syscall.SysProcIDMap{{ContainerID: 0, HostID: os.Getuid(), Size: 1},},
+        GidMappings: []syscall.SysProcIDMap{{ContainerID: 0, HostID: os.Getgid(), Size: 1},},
 	}
 
 	must(cmd.Run())
@@ -180,7 +183,7 @@ func child() {
 	// fmt.Printf("Running %v as %d \n", os.Args[2:], os.Getpid())
 	tmp_dir := os.Args[2]
 
-	cg()
+	// cg()
 
 	ici, err := os.Getwd()
 	if err != nil {
