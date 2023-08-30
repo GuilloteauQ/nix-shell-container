@@ -17,7 +17,8 @@ import (
 func main() {
 	switch os.Args[1] {
 	case "run":
-		cleanup(run())
+		// cleanup(run())
+		run()
 	case "child":
 		child()
 	default:
@@ -28,6 +29,8 @@ func main() {
 func run() string {
 	// fmt.Printf("Running %v \n", os.Args[2:])
 	tmp_dir, err := ioutil.TempDir("/tmp", "nix-container")
+	defer os.RemoveAll(tmp_dir) // clean up
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,9 +46,9 @@ func run() string {
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags:   syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER,
 		Unshareflags: syscall.CLONE_NEWNS,
-        Credential: &syscall.Credential{Uid:0 , Gid: 0},
-        UidMappings: []syscall.SysProcIDMap{{ContainerID: 0, HostID: os.Getuid(), Size: 1},},
-        GidMappings: []syscall.SysProcIDMap{{ContainerID: 0, HostID: os.Getgid(), Size: 1},},
+		Credential:   &syscall.Credential{Uid: 0, Gid: 0},
+		UidMappings:  []syscall.SysProcIDMap{{ContainerID: 0, HostID: os.Getuid(), Size: 1}},
+		GidMappings:  []syscall.SysProcIDMap{{ContainerID: 0, HostID: os.Getgid(), Size: 1}},
 	}
 
 	must(cmd.Run())
@@ -159,9 +162,10 @@ func setup_nix_env(env_filename string, tmp_dir string) (shell_hook string) {
 
 func cleanup(tmp_dir string) {
 	// fmt.Printf(" [*] Starting the cleanup\n")
-	container_root_path := filepath.Join(tmp_dir, "nixos_root_empty")
+	// container_root_path := filepath.Join(tmp_dir, "nixos_root_empty")
 	// fmt.Printf(" [*] Rm /\n")
-	must(os.RemoveAll(container_root_path))
+	// must(os.RemoveAll(container_root_path))
+	// fmt.Printf(" [*] Rm tmp dir\n")
 	// must(os.Remove(filepath.Join(tmp_dir, "nix_deps")))
 	must(os.RemoveAll(tmp_dir))
 
