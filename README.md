@@ -1,6 +1,6 @@
 # Nix-shell-container
 
-A nix shell (actually `nix develop`) running in a (thin) container
+A nix shell running in a (thin) container
 
 ## Warnings
 
