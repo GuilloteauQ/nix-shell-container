@@ -1,6 +1,6 @@
 Output demo.gif
 
-Set FontSize 20
+Set FontSize 25
 Set Width 1920
 Set Height 1080
 
@@ -36,11 +36,19 @@ Sleep 1s
 Enter
 
 Type "nix develop .#my-shell"
-Sleep 10s
+Sleep 1s
 Enter
 
 Type "pwd"
-Sleep 10s
+Sleep 1s
+Enter
+
+Type "ls /"
+Sleep 1s
+Enter
+
+Type "python --version"
+Sleep 1s
 Enter
 
 Type "exit"

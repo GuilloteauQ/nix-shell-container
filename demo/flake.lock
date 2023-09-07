@@ -54,11 +54,11 @@
         "nixpkgs_stable": "nixpkgs_stable"
       },
       "locked": {
-        "lastModified": 1693381447,
-        "narHash": "sha256-oGGdrK66M7W7fi6O/qAIbm+FPFCMeUgL6xhyS3h9/os=",
+        "lastModified": 1694070962,
+        "narHash": "sha256-tipT12RtARXeDWKp/W94bdpW2wMgsPp5iBNSibvf7zU=",
         "owner": "GuilloteauQ",
         "repo": "nix-shell-container",
-        "rev": "725c935a7bd61dda0c302240d1ceb96aa176fdcc",
+        "rev": "be0e22575dd2a70da6072f71a6a909e863302847",
         "type": "github"
       },
       "original": {

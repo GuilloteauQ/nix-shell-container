@@ -8,6 +8,10 @@ This project is just a pretext to play with containers.
 
 Don't expect it to work perfectly :)
 
+## Demo
+
+![demo](demo/demo.gif)
+
 ## Use
 
 Import this flake:
