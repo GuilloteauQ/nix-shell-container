@@ -209,15 +209,15 @@ func child() {
 	shell_hook_cmd := setup_nix_env(os.Args[3], tmp_dir)
     if len(shell_hook_cmd) > 2 {
 	    shell_hook_cmd = shell_hook_cmd[2:(len(shell_hook_cmd) - 3)]
+        hooks := strings.Split(shell_hook_cmd, `\n`)
+        for _, cmd_hook := range hooks {
+            cmdShellHook := exec.Command(bash, "-c", cmd_hook)
+            cmdShellHook.Stdin = os.Stdin
+            cmdShellHook.Stdout = os.Stdout
+            cmdShellHook.Stderr = os.Stderr
+            cmdShellHook.Run()
+        }
     }
-	hooks := strings.Split(shell_hook_cmd, `\n`)
-	for _, cmd_hook := range hooks {
-		cmdShellHook := exec.Command(bash, "-c", cmd_hook)
-		cmdShellHook.Stdin = os.Stdin
-		cmdShellHook.Stdout = os.Stdout
-		cmdShellHook.Stderr = os.Stderr
-		cmdShellHook.Run()
-	}
 
 	if len(os.Args) > 5 {
 		cmd3 := exec.Command(bash, "-c", os.Args[5])
