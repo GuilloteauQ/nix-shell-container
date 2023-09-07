@@ -207,7 +207,9 @@ func child() {
 	bash := fmt.Sprintf("%s/bin/bash", os.Args[4])
 
 	shell_hook_cmd := setup_nix_env(os.Args[3], tmp_dir)
-	shell_hook_cmd = shell_hook_cmd[2:(len(shell_hook_cmd) - 3)]
+    if len(shell_hook_cmd) > 2 {
+	    shell_hook_cmd = shell_hook_cmd[2:(len(shell_hook_cmd) - 3)]
+    }
 	hooks := strings.Split(shell_hook_cmd, `\n`)
 	for _, cmd_hook := range hooks {
 		cmdShellHook := exec.Command(bash, "-c", cmd_hook)

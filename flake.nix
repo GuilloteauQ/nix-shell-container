@@ -55,6 +55,9 @@
             echo ${pkgs.bashInteractive}
           '';
         };
+        record = pkgs.mkShell {
+          buildInputs = with pkgs; [ vhs ];
+        };
       };
 
     };
