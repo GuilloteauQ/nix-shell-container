@@ -57,9 +57,25 @@ Now running `nix develop .#myshell` will get you in a container with the shell e
 
 (you might need to run it with `sudo` if the unprivileged user namespace are not available on your machine)
 
-## TODO
+## Pass commands
 
-- [ ] pass a command via `--command`
+It is not possible to pass commands to the shell via `nix develop .#myshell --command ...` because of the way Nix manages the `--command` flag [(see here)]https://github.com/NixOS/nix/blob/2a52ec4e928c254338a612a6b40355512298ef38/src/nix/develop.cc#L545).
+
+The solution is to use the container shell as a `package`:
+
+
+```nix
+packages.${system} = {
+    myenv = nsc.lib.mkShellContainer {
+        # Your normal nix shell thingies
+    };
+};
+```
+
+To enter the container, you can run `nix run .#myenv`.
+
+To execute commands in the container, you can run `nix run .#myenv -- COMMAND`.
+
 
 ## Misc
 
