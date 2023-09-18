@@ -59,7 +59,7 @@ Now running `nix develop .#myshell` will get you in a container with the shell e
 
 ## Pass commands
 
-It is not possible to pass commands to the shell via `nix develop .#myshell --command ...` because of the way Nix manages the `--command` flag [(see here)]https://github.com/NixOS/nix/blob/2a52ec4e928c254338a612a6b40355512298ef38/src/nix/develop.cc#L545).
+It is not possible to pass commands to the shell via `nix develop .#myshell --command ...` because of the way Nix manages the `--command` flag [(see here)](https://github.com/NixOS/nix/blob/2a52ec4e928c254338a612a6b40355512298ef38/src/nix/develop.cc#L545).
 
 The solution is to use the container shell as a `package`:
 
