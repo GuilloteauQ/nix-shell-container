@@ -220,7 +220,9 @@ func child() {
     }
 
 	if len(os.Args) > 5 {
-		cmd3 := exec.Command(bash, "-c", os.Args[5])
+        command_args := os.Args[5:]
+        fmt.Println(command_args)
+        cmd3 := exec.Command(bash, "-c", strings.Join(command_args, " "))
 		cmd3.Stdin = os.Stdin
 		cmd3.Stdout = os.Stdout
 		cmd3.Stderr = os.Stderr

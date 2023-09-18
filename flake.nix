@@ -29,10 +29,17 @@
             }
           else
             underlyingShell;
+        mkShellContainer = shellInputs:
+          let
+            gotainer = self.outputs.packages.${system}.gotainer;
+            underlyingShell = pkgs.mkShell shellInputs;
+          in pkgs.writeShellScriptBin "nix-shell-container" ''
+            ${gotainer}/bin/gotainer run ${underlyingShell} ${pkgs.bashInteractive} $@
+          '';
       };
 
       packages.${system} = {
-        hello = self.lib.mkShell {
+        hello = self.lib.mkShellContainer {
           buildInputs = [ pkgs.snakemake pkgs.python3 pkgs.lua ];
           containerize = true;
           shellHook = ''
@@ -55,9 +62,7 @@
             echo ${pkgs.bashInteractive}
           '';
         };
-        record = pkgs.mkShell {
-          buildInputs = with pkgs; [ vhs ];
-        };
+        record = pkgs.mkShell { buildInputs = with pkgs; [ vhs ]; };
       };
 
     };
